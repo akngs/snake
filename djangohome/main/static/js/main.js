@@ -3,6 +3,7 @@ var fps = 30;
 var gridw = 60;
 var gridh = 60;
 var tailsPerApple = 4;
+var initialSpeed = 0.1;
 var speedIncreasingRate = 1.05;
 var maxSpeed = 1.0;
 var width;
@@ -12,10 +13,12 @@ var ctx;
 // game states
 var latestUpdate;
 var tick;
-var speed = 0.1;
+var speed = initialSpeed;
 var snake = null;
 var apple = null;
 var grids = [];
+var enemy = null;
+var enemyAi = null;
 
 
 function main() {
@@ -101,20 +104,25 @@ function onResize() {
 function initState() {
     latestUpdate = 0;
     tick = 0;
-    speed = 0;
-    snake = new Snake();
+    speed = initialSpeed;
+
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
         grids[i] = 0;
     }
 
+    snake = new Snake();
+
     deployApple();
 }
 
 function updateState() {
-    if(tick % Math.floor(1 / speed) === 0) {
-        snake.step();
-    }
+    if(tick % Math.floor(1 / speed) !== 0) return;
+
+    snake.step();
+
+    if(!enemy) return;
+    enemy.step();
 }
 
 function deployApple() {
@@ -158,6 +166,7 @@ var Snake = function() {
     this._dir = 'up';
     this._commands = [];
     this._newTails = tailsPerApple;
+    this._applesEat = 0;
     this._dead = false;
 
     this._tails = [{x: initx, y: inity}];
@@ -223,6 +232,7 @@ Snake.prototype.step = function() {
     } else if(grids[index] === 'a') {
         grids[index] = this;
         this._newTails += tailsPerApple;
+        this._applesEat += 1;
         speed = Math.min(speed * speedIncreasingRate, maxSpeed);
         deployApple();
     } else {
@@ -237,4 +247,11 @@ Snake.prototype.onCommand = function(cmd) {
 };
 Snake.prototype.isDead = function() {
     return this._dead;
-}
+};
+
+var AI = function(snake) {
+    this._snake = snake;
+};
+AI.prototype.act = {
+
+};
