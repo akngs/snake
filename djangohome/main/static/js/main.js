@@ -10,10 +10,10 @@ var ctx;
 var latestUpdate;
 var tick;
 var snake = null;
+var grids = [];
 
 
 function main() {
-
     onResize();
 
     $(window).on('resize', function() {
@@ -97,6 +97,10 @@ function initState() {
     latestUpdate = 0;
     tick = 0;
     snake = new Snake();
+    grids = [];
+    for(var i = 0; i < gridw * gridh; i++) {
+        grids[i] = 0;
+    }
 }
 
 function updateState() {
@@ -130,16 +134,23 @@ var Snake = function() {
     this._dir = 'up';
     this._commands = [];
     this._tails = [];
+    this._dead = false;
+
+    // deploy snake tails
     for(var i = 0; i < 4; i++) {
+        var x = initx;
+        var y = inity + i;
         this._tails.push({
-            x: initx,
-            y: inity + i
+            x: x,
+            y: y
         });
+        grids[x + y * gridw] = this;
     }
 };
 Snake.prototype.step = function() {
     // remove tail
-    this._tails.splice(this._tails.length - 1, 1);
+    var tail = this._tails.splice(this._tails.length - 1, 1);
+    grids[tail.x + tail.y * gridw] = 0;
 
     // update direction
     if(this._commands.length) {
@@ -184,6 +195,13 @@ Snake.prototype.step = function() {
         if(newHead.y === gridh) newHead.y = 0;
     }
     this._tails.splice(0, 0, newHead);
+
+    // check collision
+    if(grids[newHead.x + newHead.y * gridw] !== 0) {
+        this._dead = true;
+    } else {
+        grids[newHead.x + newHead.y * gridw] = this;
+    }
 };
 Snake.prototype.getTails = function() {
     return this._tails;
@@ -192,5 +210,5 @@ Snake.prototype.onCommand = function(cmd) {
     this._commands.push(cmd);
 };
 Snake.prototype.isDead = function() {
-    return false;
+    return this._dead;
 }
