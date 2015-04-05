@@ -3,6 +3,8 @@ var fps = 30;
 var gridw = 60;
 var gridh = 60;
 var tailsPerApple = 4;
+var speedIncreasingRate = 1.05;
+var maxSpeed = 1.0;
 var width;
 var height;
 var ctx;
@@ -11,7 +13,6 @@ var ctx;
 var latestUpdate;
 var tick;
 var speed = 0.1;
-var speedIncreasingRate = 1.05;
 var snake = null;
 var apple = null;
 var grids = [];
@@ -100,6 +101,7 @@ function onResize() {
 function initState() {
     latestUpdate = 0;
     tick = 0;
+    speed = 0;
     snake = new Snake();
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
@@ -221,7 +223,7 @@ Snake.prototype.step = function() {
     } else if(grids[index] === 'a') {
         grids[index] = this;
         this._newTails += tailsPerApple;
-        speed *= speedIncreasingRate;
+        speed = Math.min(speed * speedIncreasingRate, maxSpeed);
         deployApple();
     } else {
         this._dead = true;
