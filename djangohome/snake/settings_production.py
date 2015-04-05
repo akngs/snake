@@ -14,7 +14,7 @@ DATABASES = {
 }
 
 # Static files
-STATIC_ROOT = '/home/ubuntu/prjs/webcode/static_root/'
+STATIC_ROOT = '/home/ubuntu/prjs/snake/static_root/'
 
 # E-mail
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

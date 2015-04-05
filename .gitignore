@@ -59,4 +59,4 @@ target/
 *.iml
 djangohome/main/static/vendor/
 djangohome/db.sqlite3
-djangohome/webcode/settings_production.py
+djangohome/snake/settings_production.py

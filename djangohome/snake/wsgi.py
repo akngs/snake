@@ -1,5 +1,5 @@
 """
-WSGI config for webcode project.
+WSGI config for snake project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
