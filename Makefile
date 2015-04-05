@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-VENV := snake-g15e-com
+VENV := snake
 ANACONDA_HOME := $(shell conda info | grep "root environment" | awk '{FS=" "; print $$4}')
 VENV_HOME := $(ANACONDA_HOME)/envs/$(VENV)/bin
 
