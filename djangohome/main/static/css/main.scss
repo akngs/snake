@@ -1,0 +1,41 @@
+@import "../vendor/normalize-scss/normalize";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2 {
+  display: none;
+}
+
+.monitor {
+  width: 300px;
+  height: 300px;
+  margin: 10px auto;
+
+  color: #00ff31;
+  background-color: #000;
+}
+
+@media (min-width: 640px) {
+  .monitor {
+    width: 600px;
+    height: 600px;
+    margin: 20px auto;
+  }
+}
+
+.monitor > section {
+  display: none;
+}
+.monitor.state-intro > section.intro {display: block;}
+.monitor.state-help > section.help {display: block;}
+.monitor.state-stage > section.stage {display: block;}
+.monitor.state-gameover > section.gameover {display: block;}

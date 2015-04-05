@@ -1,5 +1,33 @@
 {% extends "_base.html" %}
 
 {% block body %}
-<p>Welcome to Snake!</p>
+<h1>Snake!</h1>
+<div class="monitor state-intro">
+    <section class="intro">
+        <h2>Snake!</h2>
+        <button id="play">Play</button>
+    </section>
+
+    <section class="help">
+        <h2>How to play</h2>
+        <div>Just don't touch anything but apples, m'kay?</div>
+        <button id="ok">Ok</button>
+    </section>
+
+    <section class="stage">
+        <h2>Stage</h2>
+        <canvas id="stage"></canvas>
+    </section>
+
+    <section class="gameover">
+        <h2>Game over</h2>
+        <button id="replay">Replay</button>
+    </section>
+</div>
+
+<script src="/static/vendor/jquery/dist/jquery.min.js"></script>
+<script src="/static/js/main.js"></script>
+<script>$(function() {
+    main();
+});</script>
 {% endblock %}
