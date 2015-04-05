@@ -2,9 +2,9 @@
 var fps = 30;
 var gridw = 30;
 var gridh = 30;
-var tailsPerApple = 5;
-var initialSpeed = 0.2;
-var speedIncreasing = 0.005;
+var tailsPerApple = 3;
+var initialSpeed = 0.15;
+var speedIncreasing = 0.003;
 var maxSpeed = 0.8;
 var width;
 var height;
@@ -86,9 +86,11 @@ function onTick() {
         requestAnimationFrame(onTick);
     }
 
-    if(!enemy && Math.random() > 0.95) {
+    if(!enemy && Math.random() > 0.99) {
         deployEnemy();
     } else if(enemy && enemy.isDead()) {
+        snake.increaseScore(enemy.getScore());
+
         enemy.remove();
         enemy = null;
         enemyAi = null;
@@ -119,7 +121,7 @@ function initState() {
 
     var initx = Math.floor(gridw * 0.5);
     var inity = Math.floor(gridh * 0.7);
-    snake = new Snake(initx, inity, initialSpeed);
+    snake = new Snake('player', initx, inity, initialSpeed, tailsPerApple);
     enemy = null;
     enemyAi = null;
 
@@ -159,7 +161,7 @@ function deployEnemy() {
         var x = Math.floor(Math.random() * gridw);
         var y = Math.floor(Math.random() * gridh);
         if(grids[x + y * gridw] === 0) {
-            enemy = new Snake(x, y, snake.getSpeed() * 0.8);
+            enemy = new Snake('enemy', x, y, snake.getSpeed() * 0.8, Math.ceil(snake.getTails().length * 0.8));
             enemyAi = new AI(enemy);
             break;
         }
@@ -183,7 +185,7 @@ function renderStage() {
     }
 
     if(enemy) {
-        ctx.fillStyle = '#ffaaaa';
+        ctx.fillStyle = '#ffaaff';
         var tails = enemy.getTails();
         for(var i = 0; i < tails.length; i++) {
             var tail = tails[i];
@@ -206,10 +208,11 @@ function renderScore() {
 }
 
 
-var Snake = function(initx, inity, speed) {
+var Snake = function(name, initx, inity, speed, initTails) {
+    this._name = name;
     this._dir = 'up';
     this._commands = [];
-    this._newTails = tailsPerApple;
+    this._newTails = initTails;
     this._speed = speed;
     this._dead = false;
     this._score = 0;
@@ -256,20 +259,7 @@ Snake.prototype.step = function() {
 
     // add head
     var oldHead = this._tails[0];
-    var newHead = {x: oldHead.x, y: oldHead.y};
-    if(this._dir === 'up') {
-        newHead.y -= 1;
-        if(newHead.y < 0) newHead.y = gridh - 1;
-    } else if(this._dir === 'left') {
-        newHead.x -= 1;
-        if(newHead.x < 0) newHead.x = gridw - 1;
-    } else if(this._dir === 'right') {
-        newHead.x += 1;
-        if(newHead.x === gridw) newHead.x = 0;
-    } else {
-        newHead.y += 1;
-        if(newHead.y === gridh) newHead.y = 0;
-    }
+    var newHead = moveForward(oldHead, this._dir);
     this._tails.splice(0, 0, newHead);
 
     // check collision
@@ -281,12 +271,16 @@ Snake.prototype.step = function() {
         apple = null;
         this._newTails += tailsPerApple;
         this._speed = Math.min(this._speed + speedIncreasing, maxSpeed);
-        self._score += Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * this._speed);
-        ga('send', 'event', 'in-game', 'eat-apple');
+        this.increaseScore(Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * this._speed));
+        ga('send', 'event', 'in-game', this._name + '-eat-apple');
     } else {
         this._dead = true;
+        ga('send', 'event', 'in-game', this._name + '-dead');
     }
 };
+Snake.prototype.increaseScore = function(delta) {
+    this._score += delta;
+}
 Snake.prototype.getTails = function() {
     return this._tails;
 };
@@ -318,11 +312,30 @@ var AI = function(snake) {
 };
 AI.prototype.step = function() {
     if(tick % Math.floor(1 / this._snake.getSpeed()) !== 0) return;
-    if(!apple) return;
 
     var head = this._snake.getTails()[0];
     var dir = this._snake.getDirection();
 
+    // Obstacle avoidance behavior
+    if(this.checkObstacle(head, dir)) {
+        this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
+        return;
+    }
+
+    // Walk randomly if there's no apple
+    if(!apple) {
+        var random = Math.random();
+        if(random < 0.1 && !this.checkObstacle(head, 'left')) {
+            this._snake.onCommand('left');
+        } else if(random < 0.2 && !this.checkObstacle(head, 'right')) {
+            this._snake.onCommand('right');
+        } else {
+            // do nothing
+        }
+        return;
+    }
+
+    // Seek apple
     if(apple.x === head.x && (dir === 'up' || dir === 'down')) {
         // do nothing
     } else if(apple.y === head.y && (dir === 'left' || dir === 'right')) {
@@ -331,14 +344,28 @@ AI.prototype.step = function() {
         this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
     } else if(apple.y === head.y && (dir === 'up' || dir === 'down')) {
         this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
-    } else {
-        var random = Math.random();
-        if(random < 0.1) {
-            this._snake.onCommand('left');
-        } else if(random < 0.2) {
-            this._snake.onCommand('right');
-        } else {
-            // do nothing
-        }
     }
 };
+AI.prototype.checkObstacle = function(head, dir) {
+    var ahead = moveForward(head, dir);
+    var stuff = grids[ahead.x + ahead.y * gridw];
+    return stuff !== 0 && stuff !== 'a';
+};
+
+function moveForward(pos, dir) {
+    var newPos = {x: pos.x, y: pos.y};
+    if(dir === 'up') {
+        newPos.y -= 1;
+        if(newPos.y < 0) newPos.y = gridh - 1;
+    } else if(dir === 'left') {
+        newPos.x -= 1;
+        if(newPos.x < 0) newPos.x = gridw - 1;
+    } else if(dir === 'right') {
+        newPos.x += 1;
+        if(newPos.x === gridw) newPos.x = 0;
+    } else {
+        newPos.y += 1;
+        if(newPos.y === gridh) newPos.y = 0;
+    }
+    return newPos;
+}
