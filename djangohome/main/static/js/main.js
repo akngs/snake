@@ -3,20 +3,21 @@ var fps = 30;
 var tailsPerApple = 3;
 var speedIncreasing = 0.003;
 var maxSpeed = 0.8;
-var initialSpeed;
 var width;
 var height;
 var ctx;
-var gridw;
-var gridh;
 
 // game states
 var mode;
+var initialSpeed;
+var gridw;
+var gridh;
 var latestUpdate;
 var tick;
 var snake;
 var enemy;
 var enemyAi;
+var reachHighscore;
 var apple;
 var appleAppearedAt;
 var grids = [];
@@ -32,9 +33,6 @@ function main() {
     $('#play_normal').on('click', function() {
         $('.monitor').removeClass('state-intro').addClass('state-help');
         mode = 'normal';
-        gridw = 30;
-        gridh = 30;
-        initialSpeed = 0.15;
 
         ga('set', 'dimension1', mode);
         ga('send', 'pageview', {'page': '/help','title': 'Help'});
@@ -42,9 +40,6 @@ function main() {
     $('#play_hard').on('click', function() {
         $('.monitor').removeClass('state-intro').addClass('state-help');
         mode = 'hard';
-        gridw = 60;
-        gridh = 60;
-        initialSpeed = 0.20;
 
         ga('set', 'dimension1', mode);
         ga('send', 'pageview', {'page': '/help','title': 'Help'});
@@ -61,9 +56,6 @@ function main() {
     $('#replay_normal').on('click', function() {
         $('.monitor').removeClass('state-gameover').addClass('state-stage');
         mode = 'normal';
-        gridw = 30;
-        gridh = 30;
-        initialSpeed = 0.15;
 
         initState();
         onTick();
@@ -74,9 +66,6 @@ function main() {
     $('#replay_hard').on('click', function() {
         $('.monitor').removeClass('state-gameover').addClass('state-stage');
         mode = 'hard';
-        gridw = 60;
-        gridh = 60;
-        initialSpeed = 0.20;
 
         initState();
         onTick();
@@ -153,8 +142,19 @@ function onResize() {
 }
 
 function initState() {
+    if(mode === 'normal') {
+        gridw = 30;
+        gridh = 30;
+        initialSpeed = 0.15;
+    } else {
+        gridw = 60;
+        gridh = 60;
+        initialSpeed = 0.20;
+    }
+
     latestUpdate = 0;
     tick = 0;
+    reachHighscore = false;
 
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
@@ -246,6 +246,12 @@ function renderScore() {
     if(+$('.score .high .value').text() < snake.getScore()) {
         $('.score .high .value').text(snake.getScore());
         $('.score .high .name').text('You');
+
+        if(!reachHighscore) {
+            reachHighscore = true;
+            ga('set', 'dimension1', mode);
+            ga('send', 'event', 'in-game', 'new-highscore');
+        }
     }
 }
 
