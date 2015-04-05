@@ -422,6 +422,9 @@ canvas {
   margin: 0 auto 1em;
   font-size: 14px;
   background-color: #000; }
+  .monitor button {
+    width: 12em;
+    margin-bottom: 1em; }
 
 .panel {
   position: relative;
@@ -430,9 +433,9 @@ canvas {
   font-size: 14px; }
   .panel button {
     display: inline-block;
-    width: 6em;
-    height: 6em;
-    border-radius: 3em;
+    width: 9em;
+    height: 7em;
+    border-radius: 3.5em;
     text-align: center;
     background-color: #000000;
     border: 1px solid #00ff31;

@@ -1,16 +1,17 @@
 // global configs
 var fps = 30;
-var gridw = 30;
-var gridh = 30;
 var tailsPerApple = 3;
-var initialSpeed = 0.15;
 var speedIncreasing = 0.003;
 var maxSpeed = 0.8;
+var initialSpeed;
 var width;
 var height;
 var ctx;
+var gridw;
+var gridh;
 
 // game states
+var mode;
 var latestUpdate;
 var tick;
 var snake;
@@ -28,21 +29,60 @@ function main() {
         onResize();
     });
 
-    $('#play').on('click', function() {
+    $('#play_normal').on('click', function() {
         $('.monitor').removeClass('state-intro').addClass('state-help');
+        mode = 'normal';
+        gridw = 30;
+        gridh = 30;
+        initialSpeed = 0.15;
+
+        ga('set', 'dimension1', mode);
+        ga('send', 'pageview', {'page': '/help','title': 'Help'});
+    });
+    $('#play_hard').on('click', function() {
+        $('.monitor').removeClass('state-intro').addClass('state-help');
+        mode = 'hard';
+        gridw = 60;
+        gridh = 60;
+        initialSpeed = 0.20;
+
+        ga('set', 'dimension1', mode);
         ga('send', 'pageview', {'page': '/help','title': 'Help'});
     });
     $('#ok').on('click', function() {
         $('.monitor').removeClass('state-help').addClass('state-stage');
-        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
+
         initState();
         onTick();
+
+        ga('set', 'dimension1', mode);
+        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
     });
-    $('#replay').on('click', function() {
+    $('#replay_normal').on('click', function() {
         $('.monitor').removeClass('state-gameover').addClass('state-stage');
-        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
+        mode = 'normal';
+        gridw = 30;
+        gridh = 30;
+        initialSpeed = 0.15;
+
         initState();
         onTick();
+
+        ga('set', 'dimension1', mode);
+        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
+    });
+    $('#replay_hard').on('click', function() {
+        $('.monitor').removeClass('state-gameover').addClass('state-stage');
+        mode = 'hard';
+        gridw = 60;
+        gridh = 60;
+        initialSpeed = 0.20;
+
+        initState();
+        onTick();
+
+        ga('set', 'dimension1', mode);
+        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
     });
     $('#left').on('touchstart', function() {
         onLeft();
@@ -76,8 +116,10 @@ function onTick() {
 
     if(snake.isDead()) {
         $('.monitor').removeClass('state-stage').addClass('state-gameover');
-        ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
         tick = 0;
+
+        ga('set', 'dimension1', mode);
+        ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
     } else {
         tick++;
         onTick.latestUpdate = now;
@@ -185,7 +227,7 @@ function renderStage() {
     }
 
     if(enemy) {
-        ctx.fillStyle = '#ffaaff';
+        ctx.fillStyle = '#ff88dd';
         var tails = enemy.getTails();
         for(var i = 0; i < tails.length; i++) {
             var tail = tails[i];
@@ -272,9 +314,13 @@ Snake.prototype.step = function() {
         this._newTails += tailsPerApple;
         this._speed = Math.min(this._speed + speedIncreasing, maxSpeed);
         this.increaseScore(Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * this._speed));
+
+        ga('set', 'dimension1', mode);
         ga('send', 'event', 'in-game', this._name + '-eat-apple');
     } else {
         this._dead = true;
+
+        ga('set', 'dimension1', mode);
         ga('send', 'event', 'in-game', this._name + '-dead');
     }
 };
