@@ -378,9 +378,10 @@ html, body {
   height: 100%;
   overflow: hidden;
   margin: 0;
-  padding: 0; }
+  padding: 0;
+  font-family: Monaco, "DejaVu Sans Mono", "Courier New", monospace; }
 
-h1, h2 {
+h1 {
   display: none; }
 
 canvas {
@@ -389,19 +390,43 @@ canvas {
   margin: 0; }
 
 .monitor {
+  position: relative;
   width: 300px;
   height: 300px;
   margin: 10px auto;
+  font-size: 14px;
   color: #00ff31;
   background-color: #000; }
+
+.monitor > section {
+  position: absolute;
+  width: 100%;
+  height: 100%; }
 
 @media (min-width: 640px) {
   .monitor {
     width: 600px;
     height: 600px;
-    margin: 20px auto; } }
+    margin: 20px auto;
+    font-size: 28px; } }
 .monitor > section {
-  display: none; }
+  display: none;
+  text-align: center; }
+  .monitor > section h2 {
+    margin: 0;
+    padding: 1em; }
+  .monitor > section p {
+    margin: 1em; }
+  .monitor > section .buttons {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 2em; }
+  .monitor > section button {
+    padding: 1em 2em;
+    background-color: #000000;
+    border: 1px solid #00ff31; }
 
 .monitor.state-intro > section.intro {
   display: block; }
@@ -414,5 +439,8 @@ canvas {
 
 .monitor.state-gameover > section.gameover {
   display: block; }
+
+.monitor section.stage h2 {
+  display: none; }
 
 /*# sourceMappingURL=main.css.map */

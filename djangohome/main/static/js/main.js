@@ -1,4 +1,7 @@
 var fps = 30;
+var gridw = 60;
+var gridh = 60;
+
 
 function main() {
     onResize();
@@ -27,20 +30,36 @@ function onTick() {
     var now = Date.now();
     var latest = onTick.latestUpdate || 0;
     if (now - latest < 1000 / fps) {
+        requestAnimationFrame(onTick);
         return;
     }
-    onTick.latestUpdate = now;
 
-    var dead = true;
+    var dead = onTick.tick > 30;
     if(dead) {
         $('.monitor').removeClass('state-stage').addClass('state-gameover');
         ga('send', 'pageview', {'page': '/gameover','title': 'Game Over'});
+        onTick.tick = 0;
     } else {
+        if(!onTick.tick) onTick.tick = 0;
+        onTick.tick++;
+        onTick.latestUpdate = now;
         requestAnimationFrame(onTick);
     }
 }
 
 function onResize() {
     var $monitor = $('.monitor');
-    $('canvas').width($monitor.width()).height($monitor.height());
+    var width = $monitor.width();
+    var height = $monitor.height();
+    $('canvas').width(width).height(height);
 }
+
+
+var Snake = function(x, y, l) {
+    this._x = x;
+    this._y = y;
+    this._l = l;
+};
+Snake.prototype.render = function(canvas, w, h) {
+
+};
