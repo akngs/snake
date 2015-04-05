@@ -372,14 +372,23 @@ th {
   padding: 0; }
 
 * {
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
 
 html, body {
   height: 100%;
   overflow: hidden;
   margin: 0;
   padding: 0;
-  font-family: Monaco, "DejaVu Sans Mono", "Courier New", monospace; }
+  font-family: Monaco, "DejaVu Sans Mono", "Courier New", monospace;
+  background-color: #333; }
+
+button:focus {
+  outline: 0; }
 
 h1 {
   display: none; }
@@ -393,30 +402,55 @@ canvas {
   position: relative;
   width: 300px;
   height: 300px;
-  margin: 10px auto;
+  margin: 1em auto;
   font-size: 14px;
   color: #00ff31;
   background-color: #000; }
 
-.monitor > section {
-  position: absolute;
-  width: 100%;
-  height: 100%; }
+.panel {
+  position: relative;
+  width: 300px;
+  margin: 1em auto 0;
+  font-size: 14px; }
+  .panel button {
+    display: inline-block;
+    width: 6em;
+    height: 6em;
+    border-radius: 3em;
+    text-align: center;
+    background-color: #000000;
+    border: 1px solid #00ff31;
+    color: #00ff31; }
+  .panel #left {
+    float: left; }
+  .panel #right {
+    float: right; }
 
 @media (min-width: 640px) {
   .monitor {
     width: 600px;
     height: 600px;
-    margin: 20px auto;
+    font-size: 28px; }
+
+  .panel {
+    width: 600px;
     font-size: 28px; } }
 .monitor > section {
   display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
   text-align: center; }
   .monitor > section h2 {
     margin: 0;
     padding: 1em; }
   .monitor > section p {
     margin: 1em; }
+  .monitor > section em {
+    font-style: normal;
+    text-transform: uppercase;
+    text-decoration: underline;
+    color: red; }
   .monitor > section .buttons {
     position: absolute;
     bottom: 0;
