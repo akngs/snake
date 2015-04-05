@@ -2,6 +2,7 @@
 var fps = 30;
 var gridw = 60;
 var gridh = 60;
+var tailsPerApple = 4;
 var width;
 var height;
 var ctx;
@@ -9,7 +10,10 @@ var ctx;
 // game states
 var latestUpdate;
 var tick;
+var speed = 0.1;
+var speedIncreasingRate = 1.05;
 var snake = null;
+var apple = null;
 var grids = [];
 
 
@@ -101,11 +105,25 @@ function initState() {
     for(var i = 0; i < gridw * gridh; i++) {
         grids[i] = 0;
     }
+
+    deployApple();
 }
 
 function updateState() {
-    if(tick % 10 === 0) {
+    if(tick % Math.floor(1 / speed) === 0) {
         snake.step();
+    }
+}
+
+function deployApple() {
+    while(true) {
+        var x = Math.floor(Math.random() * gridw);
+        var y = Math.floor(Math.random() * gridh);
+        if(grids[x + y * gridw] === 0) {
+            grids[x + y * gridw] = 'a';
+            apple = {x: x, y: y};
+            break;
+        }
     }
 }
 
@@ -124,6 +142,10 @@ function renderStage() {
         var tail = tails[i];
         ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
     }
+
+    // draw apple
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(apple.x * unitx + 1, apple.y * unity + 1, unitx - 1, unity - 1);
 }
 
 
@@ -133,24 +155,20 @@ var Snake = function() {
 
     this._dir = 'up';
     this._commands = [];
-    this._tails = [];
+    this._newTails = tailsPerApple;
     this._dead = false;
 
-    // deploy snake tails
-    for(var i = 0; i < 4; i++) {
-        var x = initx;
-        var y = inity + i;
-        this._tails.push({
-            x: x,
-            y: y
-        });
-        grids[x + y * gridw] = this;
-    }
+    this._tails = [{x: initx, y: inity}];
+    grids[initx + inity * gridw] = this;
 };
 Snake.prototype.step = function() {
-    // remove tail
-    var tail = this._tails.splice(this._tails.length - 1, 1);
-    grids[tail.x + tail.y * gridw] = 0;
+    // remove or retain tail
+    if(this._newTails === 0) {
+        var tail = this._tails.splice(this._tails.length - 1, 1)[0];
+        grids[tail.x + tail.y * gridw] = 0;
+    } else {
+        this._newTails--;
+    }
 
     // update direction
     if(this._commands.length) {
@@ -197,10 +215,16 @@ Snake.prototype.step = function() {
     this._tails.splice(0, 0, newHead);
 
     // check collision
-    if(grids[newHead.x + newHead.y * gridw] !== 0) {
-        this._dead = true;
+    var index = newHead.x + newHead.y * gridw;
+    if(grids[index] === 0) {
+        grids[index] = this;
+    } else if(grids[index] === 'a') {
+        grids[index] = this;
+        this._newTails += tailsPerApple;
+        speed *= speedIncreasingRate;
+        deployApple();
     } else {
-        grids[newHead.x + newHead.y * gridw] = this;
+        this._dead = true;
     }
 };
 Snake.prototype.getTails = function() {
