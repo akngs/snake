@@ -4,18 +4,18 @@ var gridw = 30;
 var gridh = 30;
 var tailsPerApple = 5;
 var initialSpeed = 0.2;
-var speedIncreasingRate = 1.01;
+var speedIncreasing = 0.005;
 var maxSpeed = 0.8;
 var width;
 var height;
 var ctx;
 
 // game states
-var score;
 var latestUpdate;
 var tick;
-var speed = initialSpeed;
 var snake;
+var enemy;
+var enemyAi;
 var apple;
 var appleAppearedAt;
 var grids = [];
@@ -69,15 +69,14 @@ function onRight() {
 
 function onTick() {
     var now = Date.now();
-    var latest = latestUpdate;
-    if (now - latest < 1000 / fps) {
+    if (now - latestUpdate < 1000 / fps) {
         requestAnimationFrame(onTick);
         return;
     }
 
     if(snake.isDead()) {
         $('.monitor').removeClass('state-stage').addClass('state-gameover');
-        ga('send', 'pageview', {'page': '/gameover','title': 'Game Over'});
+        ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
         tick = 0;
     } else {
         tick++;
@@ -85,6 +84,14 @@ function onTick() {
         updateState();
         renderStage();
         requestAnimationFrame(onTick);
+    }
+
+    if(!enemy && Math.random() > 0.95) {
+        deployEnemy();
+    } else if(enemy && enemy.isDead()) {
+        enemy.remove();
+        enemy = null;
+        enemyAi = null;
     }
 }
 
@@ -102,26 +109,36 @@ function onResize() {
 }
 
 function initState() {
-    score = 0;
     latestUpdate = 0;
     tick = 0;
-    speed = initialSpeed;
 
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
         grids[i] = 0;
     }
 
-    snake = new Snake();
+    var initx = Math.floor(gridw * 0.5);
+    var inity = Math.floor(gridh * 0.7);
+    snake = new Snake(initx, inity, initialSpeed);
+    enemy = null;
+    enemyAi = null;
 
     renderScore();
     deployApple();
 }
 
 function updateState() {
-    if(tick % Math.floor(1 / speed) !== 0) return;
-
     snake.step();
+    if(enemy) {
+        enemyAi.step();
+        enemy.step();
+    }
+
+    renderScore();
+
+    if(!apple) {
+        deployApple();
+    }
 }
 
 function deployApple() {
@@ -135,6 +152,18 @@ function deployApple() {
         }
     }
     appleAppearedAt = tick;
+}
+
+function deployEnemy() {
+    while(true) {
+        var x = Math.floor(Math.random() * gridw);
+        var y = Math.floor(Math.random() * gridh);
+        if(grids[x + y * gridw] === 0) {
+            enemy = new Snake(x, y, snake.getSpeed() * 0.8);
+            enemyAi = new AI(enemy);
+            break;
+        }
+    }
 }
 
 function renderStage() {
@@ -153,34 +182,44 @@ function renderStage() {
         ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
     }
 
+    if(enemy) {
+        ctx.fillStyle = '#ffaaaa';
+        var tails = enemy.getTails();
+        for(var i = 0; i < tails.length; i++) {
+            var tail = tails[i];
+            ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
+        }
+    }
+
     // draw apple
     ctx.fillStyle = '#ff0000';
     ctx.fillRect(apple.x * unitx + 1, apple.y * unity + 1, unitx - 1, unity - 1);
 }
 
 function renderScore() {
-    $('.score .current .value').text(score);
+    $('.score .current .value').text(snake.getScore());
 
-    if(+$('.score .high .value').text() < score) {
-        $('.score .high .value').text(score);
+    if(+$('.score .high .value').text() < snake.getScore()) {
+        $('.score .high .value').text(snake.getScore());
         $('.score .high .name').text('You');
     }
 }
 
 
-var Snake = function() {
-    var initx = Math.floor(gridw * 0.5);
-    var inity = Math.floor(gridh * 0.7);
-
+var Snake = function(initx, inity, speed) {
     this._dir = 'up';
     this._commands = [];
     this._newTails = tailsPerApple;
+    this._speed = speed;
     this._dead = false;
+    this._score = 0;
 
     this._tails = [{x: initx, y: inity}];
     grids[initx + inity * gridw] = this;
 };
 Snake.prototype.step = function() {
+    if(tick % Math.floor(1 / this._speed) !== 0) return;
+
     // remove or retain tail
     if(this._newTails === 0) {
         var tail = this._tails.splice(this._tails.length - 1, 1)[0];
@@ -239,11 +278,10 @@ Snake.prototype.step = function() {
         grids[index] = this;
     } else if(grids[index] === 'a') {
         grids[index] = this;
+        apple = null;
         this._newTails += tailsPerApple;
-        speed = Math.min(speed * speedIncreasingRate, maxSpeed);
-        score += Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * speed);
-        renderScore();
-        deployApple();
+        this._speed = Math.min(this._speed + speedIncreasing, maxSpeed);
+        self._score += Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * this._speed);
         ga('send', 'event', 'in-game', 'eat-apple');
     } else {
         this._dead = true;
@@ -257,4 +295,50 @@ Snake.prototype.onCommand = function(cmd) {
 };
 Snake.prototype.isDead = function() {
     return this._dead;
+};
+Snake.prototype.getDirection = function() {
+    return this._dir;
+};
+Snake.prototype.getScore = function() {
+    return this._score;
+};
+Snake.prototype.getSpeed = function() {
+    return this._speed;
+};
+Snake.prototype.remove = function() {
+    for(var i = 0; i < this._tails.length; i++) {
+        var tail = this._tails[i];
+        grids[tail.x + tail.y * gridw] = 0;
+    }
+};
+
+
+var AI = function(snake) {
+    this._snake = snake;
+};
+AI.prototype.step = function() {
+    if(tick % Math.floor(1 / this._snake.getSpeed()) !== 0) return;
+    if(!apple) return;
+
+    var head = this._snake.getTails()[0];
+    var dir = this._snake.getDirection();
+
+    if(apple.x === head.x && (dir === 'up' || dir === 'down')) {
+        // do nothing
+    } else if(apple.y === head.y && (dir === 'left' || dir === 'right')) {
+        // do nothing
+    } else if(apple.x === head.x && (dir === 'left' || dir === 'right')) {
+        this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
+    } else if(apple.y === head.y && (dir === 'up' || dir === 'down')) {
+        this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
+    } else {
+        var random = Math.random();
+        if(random < 0.1) {
+            this._snake.onCommand('left');
+        } else if(random < 0.2) {
+            this._snake.onCommand('right');
+        } else {
+            // do nothing
+        }
+    }
 };
