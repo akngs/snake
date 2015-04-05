@@ -18,7 +18,7 @@ function main() {
     });
     $('#replay').on('click', function() {
         $('.monitor').removeClass('state-gameover').addClass('state-stage');
-        ga('send', 'pageview', {'page': '/gameover','title': 'Game Over'});
+        ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
         onTick();
     });
 }
@@ -34,6 +34,7 @@ function onTick() {
     var dead = true;
     if(dead) {
         $('.monitor').removeClass('state-stage').addClass('state-gameover');
+        ga('send', 'pageview', {'page': '/gameover','title': 'Game Over'});
     } else {
         requestAnimationFrame(onTick);
     }
