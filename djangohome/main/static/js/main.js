@@ -1,24 +1,24 @@
 // global configs
 var fps = 30;
-var gridw = 60;
-var gridh = 60;
-var tailsPerApple = 4;
-var initialSpeed = 0.1;
-var speedIncreasingRate = 1.05;
-var maxSpeed = 1.0;
+var gridw = 30;
+var gridh = 30;
+var tailsPerApple = 5;
+var initialSpeed = 0.2;
+var speedIncreasingRate = 1.01;
+var maxSpeed = 0.8;
 var width;
 var height;
 var ctx;
 
 // game states
+var score;
 var latestUpdate;
 var tick;
 var speed = initialSpeed;
-var snake = null;
-var apple = null;
+var snake;
+var apple;
+var appleAppearedAt;
 var grids = [];
-var enemy = null;
-var enemyAi = null;
 
 
 function main() {
@@ -102,6 +102,7 @@ function onResize() {
 }
 
 function initState() {
+    score = 0;
     latestUpdate = 0;
     tick = 0;
     speed = initialSpeed;
@@ -113,6 +114,7 @@ function initState() {
 
     snake = new Snake();
 
+    renderScore();
     deployApple();
 }
 
@@ -120,9 +122,6 @@ function updateState() {
     if(tick % Math.floor(1 / speed) !== 0) return;
 
     snake.step();
-
-    if(!enemy) return;
-    enemy.step();
 }
 
 function deployApple() {
@@ -135,6 +134,7 @@ function deployApple() {
             break;
         }
     }
+    appleAppearedAt = tick;
 }
 
 function renderStage() {
@@ -158,6 +158,15 @@ function renderStage() {
     ctx.fillRect(apple.x * unitx + 1, apple.y * unity + 1, unitx - 1, unity - 1);
 }
 
+function renderScore() {
+    $('.score .current .value').text(score);
+
+    if(+$('.score .high .value').text() < score) {
+        $('.score .high .value').text(score);
+        $('.score .high .name').text('You');
+    }
+}
+
 
 var Snake = function() {
     var initx = Math.floor(gridw * 0.5);
@@ -166,7 +175,6 @@ var Snake = function() {
     this._dir = 'up';
     this._commands = [];
     this._newTails = tailsPerApple;
-    this._applesEat = 0;
     this._dead = false;
 
     this._tails = [{x: initx, y: inity}];
@@ -232,9 +240,11 @@ Snake.prototype.step = function() {
     } else if(grids[index] === 'a') {
         grids[index] = this;
         this._newTails += tailsPerApple;
-        this._applesEat += 1;
         speed = Math.min(speed * speedIncreasingRate, maxSpeed);
+        score += Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * speed);
+        renderScore();
         deployApple();
+        ga('send', 'event', 'in-game', 'eat-apple');
     } else {
         this._dead = true;
     }
@@ -247,11 +257,4 @@ Snake.prototype.onCommand = function(cmd) {
 };
 Snake.prototype.isDead = function() {
     return this._dead;
-};
-
-var AI = function(snake) {
-    this._snake = snake;
-};
-AI.prototype.act = {
-
 };

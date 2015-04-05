@@ -16,6 +16,7 @@ html, body {
   margin: 0;
   padding: 0;
   font-family: Monaco, "DejaVu Sans Mono", "Courier New", monospace;
+  color: #00ff31;
   background-color: #333;
 }
 
@@ -33,14 +34,34 @@ canvas {
   margin: 0;
 }
 
+.score {
+  position: relative;
+  width: 300px;
+  height: 3em;
+  margin: 0 auto;
+  padding: 1em 0.5em 0;
+  list-style-type: none;
+  font-size: 12px;
+  text-align: right;
+
+  li {
+    display: inline;
+  }
+  li.current {
+    float: left;
+  }
+  li.high {
+    float: right;
+  }
+}
+
 .monitor {
   position: relative;
   width: 300px;
   height: 300px;
-  margin: 1em auto;
+  margin: 0 auto 1em;
   font-size: 14px;
 
-  color: #00ff31;
   background-color: #000;
 }
 .panel {
@@ -68,6 +89,11 @@ canvas {
 }
 
 @media (min-width: 640px) {
+  .score {
+    width: 600px;
+    font-size: 14px;
+  }
+
   .monitor {
     width: 600px;
     height: 600px;
