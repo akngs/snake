@@ -326,7 +326,7 @@ Snake.prototype.step = function() {
     // check collision
     var index = newHead.x + newHead.y * gridw;
     if(grids[index] === 0) {
-        grids[index] = this;
+        grids[index] = this._name;
     } else if(grids[index] === 'a') {
         grids[index] = this._name;
         apple = null;
