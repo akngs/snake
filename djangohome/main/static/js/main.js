@@ -108,6 +108,7 @@ function onTick() {
         tick = 0;
 
         ga('set', 'dimension1', mode);
+        ga('set', 'metric1', '' + snake.getScore());
         ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
     } else {
         tick++;
