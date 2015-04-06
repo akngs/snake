@@ -279,7 +279,7 @@ var Snake = function(name, initx, inity, speed, initTails, color) {
     this._score = 0;
 
     this._tails = [{x: initx, y: inity}];
-    grids[initx + inity * gridw] = this;
+    grids[initx + inity * gridw] = this._name;
 };
 Snake.prototype.step = function() {
     if(tick % Math.floor(1 / this._speed) !== 0) return;
@@ -328,7 +328,7 @@ Snake.prototype.step = function() {
     if(grids[index] === 0) {
         grids[index] = this;
     } else if(grids[index] === 'a') {
-        grids[index] = this;
+        grids[index] = this._name;
         apple = null;
         this._newTails += tailsPerApple;
         this._speed = Math.min(this._speed + speedIncreasing, maxSpeed);
@@ -338,7 +338,7 @@ Snake.prototype.step = function() {
     } else {
         this._dead = true;
 
-        ga('send', 'event', 'in-game', this._name + '-dead');
+        ga('send', 'event', 'in-game', this._name + '-killed-by-' + grids[index]);
     }
 };
 Snake.prototype.increaseScore = function(delta) {
