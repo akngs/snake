@@ -50,7 +50,6 @@ function main() {
         initState();
         onTick();
 
-        ga('set', 'dimension1', mode);
         ga('send', 'pageview', {'page': '/stage','title': 'Stage'});
     });
     $('#replay_normal').on('click', function() {
@@ -107,9 +106,9 @@ function onTick() {
         $('.monitor').removeClass('state-stage').addClass('state-gameover');
         tick = 0;
 
-        ga('set', 'dimension1', mode);
         ga('set', 'metric1', '' + snake.getScore());
         ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
+        ga('set', 'metric1', null);
     } else {
         tick++;
         onTick.latestUpdate = now;
@@ -250,7 +249,6 @@ function renderScore() {
 
         if(!reachHighscore) {
             reachHighscore = true;
-            ga('set', 'dimension1', mode);
             ga('send', 'event', 'in-game', 'new-highscore');
         }
     }
@@ -322,12 +320,10 @@ Snake.prototype.step = function() {
         this._speed = Math.min(this._speed + speedIncreasing, maxSpeed);
         this.increaseScore(Math.floor(Math.max(10, 300 - (tick - appleAppearedAt)) * this._speed));
 
-        ga('set', 'dimension1', mode);
         ga('send', 'event', 'in-game', this._name + '-eat-apple');
     } else {
         this._dead = true;
 
-        ga('set', 'dimension1', mode);
         ga('send', 'event', 'in-game', this._name + '-dead');
     }
 };
