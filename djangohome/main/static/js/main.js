@@ -117,7 +117,7 @@ function onTick() {
         requestAnimationFrame(onTick);
     }
 
-    if(!enemy && Math.random() > 0.99) {
+    if(!enemy && tick > 200) {
         deployEnemy();
     } else if(enemy && enemy.isDead()) {
         snake.increaseScore(enemy.getScore());
@@ -145,7 +145,7 @@ function initState() {
     if(mode === 'normal') {
         gridw = 30;
         gridh = 30;
-        initialSpeed = 0.15;
+        initialSpeed = 0.10;
     } else {
         gridw = 60;
         gridh = 60;
@@ -163,7 +163,7 @@ function initState() {
 
     var initx = Math.floor(gridw * 0.5);
     var inity = Math.floor(gridh * 0.7);
-    snake = new Snake('player', initx, inity, initialSpeed, tailsPerApple);
+    snake = new Snake('player', initx, inity, initialSpeed, tailsPerApple, '#00ff31');
     enemy = null;
     enemyAi = null;
 
@@ -198,13 +198,37 @@ function deployApple() {
     appleAppearedAt = tick;
 }
 
+var enemyTypes = {
+    'pink': {
+        speed: 0.6,
+        tail: 0.8,
+        randomness: 0.1,
+        color: '#ff8888'
+    },
+    'blue': {
+        speed: 1.1,
+        tail: 0.05,
+        randomness: 0.2,
+        color: '#8888ff'
+    },
+    'yellow': {
+        speed: 0.5,
+        tail: 1.5,
+        randomness: 0.05,
+        color: '#ffff88'
+    }
+};
+
 function deployEnemy() {
+    var enemyName = ['pink', 'blue', 'yellow'][Math.floor(Math.random() * 3)];
+    var enemyType = enemyTypes[enemyName];
+
     while(true) {
         var x = Math.floor(Math.random() * gridw);
         var y = Math.floor(Math.random() * gridh);
         if(grids[x + y * gridw] === 0) {
-            enemy = new Snake('enemy', x, y, snake.getSpeed() * 0.8, Math.ceil(snake.getTails().length * 0.8));
-            enemyAi = new AI(enemy);
+            enemy = new Snake(enemyName, x, y, snake.getSpeed() * enemyType.speed, Math.ceil(snake.getTails().length * enemyType.tail), enemyType.color);
+            enemyAi = new AI(enemy, enemyType.randomness);
             break;
         }
     }
@@ -218,21 +242,10 @@ function renderStage() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, width, height);
 
-    // draw snake
-    ctx.fillStyle = '#00ff31';
-    var tails = snake.getTails();
-    for(var i = 0; i < tails.length; i++) {
-        var tail = tails[i];
-        ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
-    }
-
+    // draw snakes
+    snake.render(ctx);
     if(enemy) {
-        ctx.fillStyle = '#ff88dd';
-        var tails = enemy.getTails();
-        for(var i = 0; i < tails.length; i++) {
-            var tail = tails[i];
-            ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
-        }
+        enemy.render(ctx);
     }
 
     // draw apple
@@ -255,12 +268,13 @@ function renderScore() {
 }
 
 
-var Snake = function(name, initx, inity, speed, initTails) {
+var Snake = function(name, initx, inity, speed, initTails, color) {
     this._name = name;
     this._dir = 'up';
     this._commands = [];
-    this._newTails = initTails;
     this._speed = speed;
+    this._newTails = initTails;
+    this._color = color;
     this._dead = false;
     this._score = 0;
 
@@ -286,17 +300,17 @@ Snake.prototype.step = function() {
                 this._dir = 'left';
             } else if(this._dir === 'right') {
                 this._dir = 'up';
-            } else if(this._dir === 'bottom') {
+            } else if(this._dir === 'down') {
                 this._dir = 'right';
             } else {
-                this._dir = 'bottom';
+                this._dir = 'down';
             }
         } else {
             if(this._dir === 'up') {
                 this._dir = 'right';
             } else if(this._dir === 'right') {
-                this._dir = 'bottom';
-            } else if(this._dir === 'bottom') {
+                this._dir = 'down';
+            } else if(this._dir === 'down') {
                 this._dir = 'left';
             } else {
                 this._dir = 'up';
@@ -329,7 +343,7 @@ Snake.prototype.step = function() {
 };
 Snake.prototype.increaseScore = function(delta) {
     this._score += delta;
-}
+};
 Snake.prototype.getTails = function() {
     return this._tails;
 };
@@ -354,10 +368,22 @@ Snake.prototype.remove = function() {
         grids[tail.x + tail.y * gridw] = 0;
     }
 };
+Snake.prototype.render = function(ctx) {
+    var unitx = width / gridw;
+    var unity = height / gridh;
+
+    ctx.fillStyle = this._color;
+    var tails = this.getTails();
+    for(var i = 0; i < tails.length; i++) {
+        var tail = tails[i];
+        ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
+    }
+};
 
 
-var AI = function(snake) {
+var AI = function(snake, randomness) {
     this._snake = snake;
+    this._randomness = randomness;
 };
 AI.prototype.step = function() {
     if(tick % Math.floor(1 / this._snake.getSpeed()) !== 0) return;
@@ -365,34 +391,39 @@ AI.prototype.step = function() {
     var head = this._snake.getTails()[0];
     var dir = this._snake.getDirection();
 
-    // Obstacle avoidance behavior
+    // Obstacle avoidance
     if(this.checkObstacle(head, dir)) {
         this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
         return;
     }
 
-    // Walk randomly if there's no apple
+    // Apple seeking
     if(!apple) {
-        var random = Math.random();
-        if(random < 0.1 && !this.checkObstacle(head, 'left')) {
-            this._snake.onCommand('left');
-        } else if(random < 0.2 && !this.checkObstacle(head, 'right')) {
-            this._snake.onCommand('right');
-        } else {
-            // do nothing
-        }
         return;
     }
-
-    // Seek apple
     if(apple.x === head.x && (dir === 'up' || dir === 'down')) {
         // do nothing
     } else if(apple.y === head.y && (dir === 'left' || dir === 'right')) {
         // do nothing
     } else if(apple.x === head.x && (dir === 'left' || dir === 'right')) {
-        this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
+        var newDir = Math.random() > 0.5 ? 'left' : 'right';
+        if(!this.checkObstacle(head, newDir)) {
+            this._snake.onCommand(newDir);
+        }
     } else if(apple.y === head.y && (dir === 'up' || dir === 'down')) {
-        this._snake.onCommand(Math.random() > 0.5 ? 'left' : 'right');
+        var newDir = Math.random() > 0.5 ? 'left' : 'right';
+        if(!this.checkObstacle(head, newDir)) {
+            this._snake.onCommand(newDir);
+        }
+    } else {
+        var random = Math.random();
+        if(random < this._randomness * 0.5 && !this.checkObstacle(head, 'left')) {
+            this._snake.onCommand('left');
+        } else if(random < this._randomness && !this.checkObstacle(head, 'right')) {
+            this._snake.onCommand('right');
+        } else {
+            // do nothing
+        }
     }
 };
 AI.prototype.checkObstacle = function(head, dir) {
