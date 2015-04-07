@@ -328,6 +328,7 @@ var Snake = function(name, initx, inity, speed, initTails, color) {
 };
 Snake.prototype.step = function() {
     if(tick % Math.floor(1 / this._speed) !== 0) return;
+    if(this.isDead()) return;
 
     // remove or retain tail
     if(this._newTails === 0) {
@@ -366,13 +367,14 @@ Snake.prototype.step = function() {
     // add head
     var oldHead = this._tails[0];
     var newHead = moveForward(oldHead, this._dir);
-    this._tails.splice(0, 0, newHead);
 
     // check collision
     var index = newHead.x + newHead.y * gridw;
     if(grids[index] === 0) {
+        this._tails.splice(0, 0, newHead);
         grids[index] = this._name;
     } else if(grids[index] === 'a') {
+        this._tails.splice(0, 0, newHead);
         grids[index] = this._name;
         apple = null;
         this._newTails += tailsPerApple;
