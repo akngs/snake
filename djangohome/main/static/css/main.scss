@@ -176,8 +176,13 @@ body > .score {
     border-top: 1px solid #00ff31;
     border-bottom: 1px solid #00ff31;
 
+    li:first-child {
+      font-weight: bold;
+      color: white;
+    }
     li {
       font-size: smaller;
+      line-height: 1.1;
     }
 
     .name {

@@ -505,8 +505,12 @@ body > .score {
   text-align: left;
   border-top: 1px solid #00ff31;
   border-bottom: 1px solid #00ff31; }
+  .monitor .highscore li:first-child {
+    font-weight: bold;
+    color: white; }
   .monitor .highscore li {
-    font-size: smaller; }
+    font-size: smaller;
+    line-height: 1.1; }
   .monitor .highscore .name {
     display: inline-block; }
   .monitor .highscore .score {
