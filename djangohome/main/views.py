@@ -9,7 +9,7 @@ import models
 
 
 def game(request):
-    highscores = models.Highscore.top5()
+    highscores = models.Highscore.topn()
     return render_to_response(
         'main/game.html',
         {
@@ -23,7 +23,7 @@ def game(request):
 class HighscoreView(View):
     def get(self, request):
         highscores = []
-        for s in models.Highscore.top5():
+        for s in models.Highscore.topn():
             highscores.append({'name': s.name, 'score': s.score})
         return HttpResponse(json.dumps(highscores), content_type='text/json')
 

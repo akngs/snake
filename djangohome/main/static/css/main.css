@@ -466,7 +466,7 @@ body > .score {
   text-align: center; }
   .monitor > section h2 {
     margin: 0;
-    padding: 1em; }
+    padding: 0.5em; }
   .monitor > section p {
     margin: 1em; }
   .monitor > section em {
@@ -481,7 +481,7 @@ body > .score {
     right: 0;
     margin: 1em; }
   .monitor > section button {
-    padding: 1em 2em;
+    padding: 0.5em 2em;
     background-color: #000000;
     border: 1px solid #00ff31; }
 
@@ -501,7 +501,7 @@ body > .score {
   display: none; }
 .monitor .highscore {
   margin: 0 3em;
-  padding: 0.5em 0.5em 0.5em 2.5em;
+  padding: 0.2em 0.5em 0.2em 2.5em;
   text-align: left;
   border-top: 1px solid #00ff31;
   border-bottom: 1px solid #00ff31; }

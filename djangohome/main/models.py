@@ -9,8 +9,8 @@ class Highscore(models.Model):
     created_at = models.DateTimeField('date created', null=True)
 
     @classmethod
-    def top5(cls):
-        highscores = cls.objects.order_by('-score')[:5]
+    def topn(cls):
+        highscores = cls.objects.order_by('-score')[:10]
         if len(highscores) == 0:
             highscores = [
                 cls(name='Anonymous', mode='normal', score=100, created_at=timezone.now())
