@@ -232,6 +232,7 @@ function deployEnemy() {
             break;
         }
     }
+    ga('send', 'event', 'in-game', enemyName + '-deployed');
 }
 
 function renderStage() {
