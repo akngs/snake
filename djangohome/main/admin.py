@@ -1,3 +1,9 @@
 from django.contrib import admin
+import models
 
-# Register your models here.
+
+class HighscoreAdmin(admin.ModelAdmin):
+    list_filter = ('mode',)
+
+
+admin.site.register(models.Highscore, HighscoreAdmin)

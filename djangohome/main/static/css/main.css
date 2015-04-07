@@ -399,7 +399,7 @@ canvas {
   padding: 0;
   margin: 0; }
 
-.score {
+body > .score {
   position: relative;
   width: 300px;
   height: 3em;
@@ -408,11 +408,11 @@ canvas {
   list-style-type: none;
   font-size: 12px;
   text-align: right; }
-  .score li {
+  body > .score li {
     display: inline; }
-  .score li.current {
+  body > .score li.current {
     float: left; }
-  .score li.high {
+  body > .score li.high {
     float: right; }
 
 .monitor {
@@ -423,8 +423,8 @@ canvas {
   font-size: 14px;
   background-color: #000; }
   .monitor button {
-    width: 12em;
-    margin-bottom: 1em; }
+    width: 7em;
+    margin: 1em; }
 
 .panel {
   position: relative;
@@ -446,7 +446,7 @@ canvas {
     float: right; }
 
 @media (min-width: 640px) {
-  .score {
+  body > .score {
     width: 600px;
     font-size: 14px; }
 
@@ -479,7 +479,7 @@ canvas {
     bottom: 0;
     left: 0;
     right: 0;
-    margin: 2em; }
+    margin: 1em; }
   .monitor > section button {
     padding: 1em 2em;
     background-color: #000000;
@@ -499,5 +499,17 @@ canvas {
 
 .monitor section.stage h2 {
   display: none; }
+.monitor .highscore {
+  margin: 0 3em;
+  padding: 0.5em 0.5em 0.5em 2.5em;
+  text-align: left;
+  border-top: 1px solid #00ff31;
+  border-bottom: 1px solid #00ff31; }
+  .monitor .highscore li {
+    font-size: smaller; }
+  .monitor .highscore .name {
+    display: inline-block; }
+  .monitor .highscore .score {
+    float: right; }
 
 /*# sourceMappingURL=main.css.map */

@@ -8,6 +8,7 @@ var height;
 var ctx;
 
 // game states
+var playerName;
 var mode;
 var initialSpeed;
 var gridw;
@@ -21,6 +22,41 @@ var reachHighscore;
 var apple;
 var appleAppearedAt;
 var grids = [];
+
+
+// Django CSRF
+$(function() {
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+});
 
 
 function main() {
@@ -109,6 +145,14 @@ function onTick() {
         ga('set', 'metric1', '' + snake.getScore());
         ga('send', 'pageview', {'page': '/gameover', 'title': 'Game Over'});
         ga('set', 'metric1', null);
+
+        // update score
+        var score = snake.getScore();
+        playerName = playerName || prompt('Enter your name:') || 'Anonymous';
+
+        $.post('/highscores/', {'name': playerName, score: score, mode: mode}, function(res) {
+            updateHighscores(res);
+        });
     } else {
         tick++;
         onTick.latestUpdate = now;
@@ -449,4 +493,15 @@ function moveForward(pos, dir) {
         if(newPos.y === gridh) newPos.y = 0;
     }
     return newPos;
+}
+
+function updateHighscores(highscores) {
+    $('body > .score .high .value').text(highscores[0].score);
+    $('body > .score .high .name').text(highscores[0].name);
+
+    var $highscore = $('ol.highscore');
+    $highscore.html('');
+    for(var i = 0; i < highscores.length; i++) {
+        $highscore.append('<li><span class="name">' + highscores[i].name + '</span> <span class="score">' + highscores[i].score + '</span></li>');
+    }
 }

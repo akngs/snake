@@ -34,7 +34,7 @@ canvas {
   margin: 0;
 }
 
-.score {
+body > .score {
   position: relative;
   width: 300px;
   height: 3em;
@@ -65,8 +65,8 @@ canvas {
   background-color: #000;
 
   button {
-    width: 12em;
-    margin-bottom: 1em;
+    width: 7em;
+    margin: 1em;
   }
 }
 .panel {
@@ -94,7 +94,7 @@ canvas {
 }
 
 @media (min-width: 640px) {
-  .score {
+  body > .score {
     width: 600px;
     font-size: 14px;
   }
@@ -139,7 +139,7 @@ canvas {
     bottom: 0;
     left: 0;
     right: 0;
-    margin: 2em;
+    margin: 1em;
   }
 
   button {
@@ -167,5 +167,24 @@ canvas {
   }
   section.gameover {
 
+  }
+
+  .highscore {
+    margin: 0 3em;
+    padding: 0.5em 0.5em 0.5em 2.5em;
+    text-align: left;
+    border-top: 1px solid #00ff31;
+    border-bottom: 1px solid #00ff31;
+
+    li {
+      font-size: smaller;
+    }
+
+    .name {
+      display: inline-block;
+    }
+    .score {
+      float: right;
+    }
   }
 }
