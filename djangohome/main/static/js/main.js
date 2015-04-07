@@ -8,6 +8,7 @@ var height;
 var ctx;
 
 // game states
+var pause;
 var playerName;
 var mode;
 var initialSpeed;
@@ -84,6 +85,8 @@ function main() {
             onLeft();
         } else if(e.keyCode == 39) {
             onRight();
+        //} else if(e.keyCode == 32) {
+        //    pause = !pause;
         }
     });
 }
@@ -98,7 +101,7 @@ function onRight() {
 
 function onTick() {
     var now = Date.now();
-    if (now - latestUpdate < 1000 / fps) {
+    if (now - latestUpdate < 1000 / fps || pause) {
         requestAnimationFrame(onTick);
         return;
     }
@@ -151,6 +154,8 @@ function onResize() {
 }
 
 function initState() {
+    pause = false;
+
     if(mode === 'normal') {
         gridw = 30;
         gridh = 30;
