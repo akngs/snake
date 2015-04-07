@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.http import HttpResponse
 from django.views.generic import View
 from django.utils import timezone
+from datetime import timedelta
 import json
 import models
 
@@ -33,4 +34,5 @@ class HighscoreView(View):
         highscore = models.Highscore(name=name, mode=mode, score=score, created_at=timezone.now())
         highscore.save()
 
+        models.Highscore.objects.filter(created_at__lte=timezone.now()-timedelta(days=3)).delete()
         return self.get(request)
