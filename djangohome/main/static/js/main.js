@@ -17,8 +17,8 @@ var gridh;
 var latestUpdate;
 var tick;
 var snake;
-var enemy;
-var enemyAi;
+var enemies;
+var maxEnemies;
 var reachHighscore;
 var apple;
 var appleAppearedAt;
@@ -131,14 +131,18 @@ function onTick() {
         requestAnimationFrame(onTick);
     }
 
-    if(!enemy && tick > 200) {
+    if(enemies.length < maxEnemies && tick > 200 && Math.random() > 0.9) {
         deployEnemy();
-    } else if(enemy && enemy.isDead()) {
-        snake.increaseScore(enemy.getScore());
+    }
 
-        enemy.remove();
-        enemy = null;
-        enemyAi = null;
+    // remove dead enemy snakes
+    for(var i = enemies.length - 1; i >= 0; i--) {
+        var enemy = enemies[i];
+        if(enemy.isDead()) {
+            snake.increaseScore(enemy.getScore());
+            enemy.remove();
+            enemies.splice(i, 1);
+        }
     }
 }
 
@@ -162,15 +166,18 @@ function initState() {
         gridw = 30;
         gridh = 30;
         initialSpeed = 0.10;
+        maxEnemies = 1;
     } else {
         gridw = 60;
         gridh = 60;
         initialSpeed = 0.20;
+        maxEnemies = 2;
     }
 
     latestUpdate = 0;
     tick = 0;
     reachHighscore = false;
+    enemies = [];
 
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
@@ -180,8 +187,6 @@ function initState() {
     var initx = Math.floor(gridw * 0.5);
     var inity = Math.floor(gridh * 0.7);
     snake = new Snake('player', initx, inity, initialSpeed, tailsPerApple, '#00ff31');
-    enemy = null;
-    enemyAi = null;
 
     renderScore();
     deployApple();
@@ -189,9 +194,8 @@ function initState() {
 
 function updateState() {
     snake.step();
-    if(enemy) {
-        enemyAi.step();
-        enemy.step();
+    for(var i = 0; i < enemies.length; i++) {
+        enemies[i].step();
     }
 
     renderScore();
@@ -243,8 +247,9 @@ function deployEnemy() {
         var x = Math.floor(Math.random() * gridw);
         var y = Math.floor(Math.random() * gridh);
         if(grids[x + y * gridw] === 0) {
-            enemy = new Snake(enemyName, x, y, snake.getSpeed() * enemyType.speed, Math.ceil(snake.getTails().length * enemyType.tail), enemyType.color);
-            enemyAi = new AI(enemy, enemyType.randomness);
+            var enemy = new Snake(enemyName, x, y, snake.getSpeed() * enemyType.speed, Math.ceil(snake.getTails().length * enemyType.tail), enemyType.color);
+            enemy.setAI(new AI(enemyType.randomness));
+            enemies.push(enemy);
             break;
         }
     }
@@ -261,8 +266,9 @@ function renderStage() {
 
     // draw snakes
     snake.render(ctx);
-    if(enemy) {
-        enemy.render(ctx);
+
+    for(var i = 0; i < enemies.length; i++) {
+        enemies[i].render(ctx);
     }
 
     // draw apple
@@ -294,11 +300,18 @@ var Snake = function(name, initx, inity, speed, initTails, color) {
     this._color = color;
     this._dead = false;
     this._score = 0;
+    this._ai = null;
 
     this._tails = [{x: initx, y: inity}];
     grids[initx + inity * gridw] = this._name;
 };
+Snake.prototype.setAI = function(ai) {
+    this._ai = ai;
+    this._ai.setSnake(this);
+}
 Snake.prototype.step = function() {
+    if(this._ai) this._ai.step();
+
     if(tick % Math.floor(1 / this._speed) !== 0) return;
     if(this.isDead()) return;
 
@@ -393,6 +406,8 @@ Snake.prototype.render = function(ctx) {
 
     ctx.fillStyle = this._color;
     var tails = this.getTails();
+
+    // draw tails
     for(var i = 0; i < tails.length; i++) {
         var tail = tails[i];
         ctx.fillRect(tail.x * unitx + 1, tail.y * unity + 1, unitx - 1, unity - 1);
@@ -400,10 +415,12 @@ Snake.prototype.render = function(ctx) {
 };
 
 
-var AI = function(snake, randomness) {
-    this._snake = snake;
+var AI = function(randomness) {
     this._randomness = randomness;
 };
+AI.prototype.setSnake = function(snake) {
+    this._snake = snake;
+}
 AI.prototype.step = function() {
     if(tick % Math.floor(1 / this._snake.getSpeed()) !== 0) return;
 
