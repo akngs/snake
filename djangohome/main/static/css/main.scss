@@ -61,6 +61,7 @@ body > .score {
   height: 300px;
   margin: 0 auto 1em;
   font-size: 14px;
+  z-index: 1;
 
   background-color: #000;
 
@@ -76,6 +77,7 @@ body > .score {
   font-size: 14px;
 
   button {
+    position: relative;
     display: inline-block;
     width: 9em;
     height: 7em;
@@ -84,6 +86,11 @@ body > .score {
     background-color: #000000;
     border: 1px solid #00ff31;
     color: #00ff31;
+    top: 0;
+    transition: top 1s;
+  }
+  button.hidden {
+    top: -10em;
   }
   #left {
     float: left;

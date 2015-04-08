@@ -34,6 +34,7 @@ function main() {
 
     $('#play_normal').on('click', function() {
         $('.monitor').removeClass('state-intro').addClass('state-help');
+        $('.panel button').removeClass('hidden');
         mode = 'normal';
 
         ga('set', 'dimension1', mode);
@@ -41,6 +42,7 @@ function main() {
     });
     $('#play_hard').on('click', function() {
         $('.monitor').removeClass('state-intro').addClass('state-help');
+        $('.panel button').removeClass('hidden');
         mode = 'hard';
 
         ga('set', 'dimension1', mode);

@@ -421,6 +421,7 @@ body > .score {
   height: 300px;
   margin: 0 auto 1em;
   font-size: 14px;
+  z-index: 1;
   background-color: #000; }
   .monitor button {
     width: 7em;
@@ -432,6 +433,7 @@ body > .score {
   margin: 1em auto 0;
   font-size: 14px; }
   .panel button {
+    position: relative;
     display: inline-block;
     width: 9em;
     height: 7em;
@@ -439,7 +441,11 @@ body > .score {
     text-align: center;
     background-color: #000000;
     border: 1px solid #00ff31;
-    color: #00ff31; }
+    color: #00ff31;
+    top: 0;
+    transition: top 1s; }
+  .panel button.hidden {
+    top: -10em; }
   .panel #left {
     float: left; }
   .panel #right {
