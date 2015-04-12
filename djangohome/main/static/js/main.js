@@ -235,8 +235,6 @@ function onResize() {
 function initState() {
     // set difficulty parameter
     var difficultyParam = difficultyParams[mode + '_' + difficultyModifier];
-    console.log(mode + '_' + difficultyModifier);
-    console.log(difficultyParam);
     gridw = difficultyParam['gridw'];
     gridh = difficultyParam['gridh'];
     initialSpeed = difficultyParam['initialSpeed'];
