@@ -25,6 +25,78 @@ var appleAppearedAt;
 var grids = [];
 
 
+var difficultyModifier = getQuerystring('d', 'n');
+if(difficultyModifier === 'h') {
+    difficultyModifier = 'harder';
+} else if(difficultyModifier === 'e') {
+    difficultyModifier = 'easier';
+} else {
+    difficultyModifier = 'base';
+}
+
+
+var difficultyParams = {
+    'normal_base': {
+        'gridw': 30,
+        'gridh': 30,
+        'initialSpeed': 0.10,
+        'maxEnemies': 1
+    },
+    'hard_base': {
+        'gridw': 60,
+        'gridh': 60,
+        'initialSpeed': 0.20,
+        'maxEnemies': 2
+    },
+    'normal_harder': {
+        'gridw': 30,
+        'gridh': 30,
+        'initialSpeed': 0.15,
+        'maxEnemies': 1
+    },
+    'hard_harder': {
+        'gridw': 60,
+        'gridh': 60,
+        'initialSpeed': 0.25,
+        'maxEnemies': 2
+    },
+    'normal_easier': {
+        'gridw': 30,
+        'gridh': 30,
+        'initialSpeed': 0.08,
+        'maxEnemies': 1
+    },
+    'hard_easier': {
+        'gridw': 60,
+        'gridh': 60,
+        'initialSpeed': 0.15,
+        'maxEnemies': 2
+    }
+};
+
+
+var enemyTypes = {
+    'pink': {
+        speed: 0.6,
+        tail: 0.8,
+        randomness: 0.1,
+        color: '#ff8888'
+    },
+    'blue': {
+        speed: 1.1,
+        tail: 0.05,
+        randomness: 0.2,
+        color: '#8888ff'
+    },
+    'yellow': {
+        speed: 0.5,
+        tail: 1.5,
+        randomness: 0.05,
+        color: '#ffff88'
+    }
+};
+
+
 function main() {
     onResize();
 
@@ -159,31 +231,31 @@ function onResize() {
     ctx = $canvas[0].getContext('2d');
 }
 
+
 function initState() {
+    // set difficulty parameter
+    var difficultyParam = difficultyParams[mode + '_' + difficultyModifier];
+    console.log(mode + '_' + difficultyModifier);
+    console.log(difficultyParam);
+    gridw = difficultyParam['gridw'];
+    gridh = difficultyParam['gridh'];
+    initialSpeed = difficultyParam['initialSpeed'];
+    maxEnemies = difficultyParam['maxEnemies'];
+
+    // reset other game states
     pause = false;
-
-    if(mode === 'normal') {
-        gridw = 30;
-        gridh = 30;
-        initialSpeed = 0.10;
-        maxEnemies = 1;
-    } else {
-        gridw = 60;
-        gridh = 60;
-        initialSpeed = 0.20;
-        maxEnemies = 2;
-    }
-
     latestUpdate = 0;
     tick = 0;
     reachHighscore = false;
     enemies = [];
 
+    // init grids
     grids = [];
     for(var i = 0; i < gridw * gridh; i++) {
         grids[i] = 0;
     }
 
+    // deploy player's snake
     var initx = Math.floor(gridw * 0.5);
     var inity = Math.floor(gridh * 0.7);
     snake = new Snake('player', initx, inity, initialSpeed, tailsPerApple, '#00ff31');
@@ -217,27 +289,6 @@ function deployApple() {
     }
     appleAppearedAt = tick;
 }
-
-var enemyTypes = {
-    'pink': {
-        speed: 0.6,
-        tail: 0.8,
-        randomness: 0.1,
-        color: '#ff8888'
-    },
-    'blue': {
-        speed: 1.1,
-        tail: 0.05,
-        randomness: 0.2,
-        color: '#8888ff'
-    },
-    'yellow': {
-        speed: 0.5,
-        tail: 1.5,
-        randomness: 0.05,
-        color: '#ffff88'
-    }
-};
 
 function deployEnemy() {
     var enemyName = ['pink', 'blue', 'yellow'][Math.floor(Math.random() * 3)];
@@ -495,4 +546,17 @@ function updateHighscores(highscores) {
     for(var i = 0; i < highscores.length; i++) {
         $highscore.append('<li><span class="name">' + highscores[i].name + '</span> <span class="score">' + highscores[i].score + '</span></li>');
     }
+}
+
+
+function getQuerystring(target, defaultValue) {
+    var qs = window.location.search.substr(1);
+    var pairs = qs.split('&');
+    for(var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        var key = pair[0];
+        var value = pair[1];
+        if(key === target) return value;
+    }
+    return defaultValue;
 }
