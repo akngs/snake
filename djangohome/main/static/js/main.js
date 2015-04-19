@@ -25,48 +25,14 @@ var appleAppearedAt;
 var grids = [];
 
 
-var difficultyModifier = getQuerystring('d', 'n');
-if(difficultyModifier === 'h') {
-    difficultyModifier = 'harder';
-} else if(difficultyModifier === 'e') {
-    difficultyModifier = 'easier';
-} else {
-    difficultyModifier = 'base';
-}
-
-
 var difficultyParams = {
-    'normal_base': {
-        'gridw': 30,
-        'gridh': 30,
-        'initialSpeed': 0.10,
-        'maxEnemies': 1
-    },
-    'hard_base': {
-        'gridw': 60,
-        'gridh': 60,
-        'initialSpeed': 0.20,
-        'maxEnemies': 2
-    },
-    'normal_harder': {
-        'gridw': 30,
-        'gridh': 30,
-        'initialSpeed': 0.15,
-        'maxEnemies': 1
-    },
-    'hard_harder': {
-        'gridw': 60,
-        'gridh': 60,
-        'initialSpeed': 0.25,
-        'maxEnemies': 2
-    },
-    'normal_easier': {
+    'normal': {
         'gridw': 30,
         'gridh': 30,
         'initialSpeed': 0.08,
         'maxEnemies': 1
     },
-    'hard_easier': {
+    'hard': {
         'gridw': 60,
         'gridh': 60,
         'initialSpeed': 0.15,
@@ -234,7 +200,7 @@ function onResize() {
 
 function initState() {
     // set difficulty parameter
-    var difficultyParam = difficultyParams[mode + '_' + difficultyModifier];
+    var difficultyParam = difficultyParams[mode];
     gridw = difficultyParam['gridw'];
     gridh = difficultyParam['gridh'];
     initialSpeed = difficultyParam['initialSpeed'];
